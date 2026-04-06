@@ -1,0 +1,48 @@
+[project]
+name = "logger"
+version = "0.1.0"
+description = "Structured logging package: JSON in production, coloured console in development."
+readme = "README.md"
+requires-python = "~=3.13.0"
+dependencies = [
+    "structlog>=25.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.0",
+    "taskipy>=1.14.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.7,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["A", "B", "C", "E", "F", "W", "I", "UP", "FURB", "RUF"]
+exclude = [".venv"]
+ignore = ["E501", "C901"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+[tool.taskipy.tasks]
+precommits = { cmd = "uvx ruff format . && uvx ruff check . --fix --unsafe-fixes && uvx pyright .", help = "Lint, format and typecheck Python codebase" }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
