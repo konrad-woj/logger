@@ -34,7 +34,7 @@ def test_configure_prod_uses_json_renderer(monkeypatch: pytest.MonkeyPatch) -> N
 def test_configure_includes_merge_contextvars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("LOG_ENV", raising=False)
     configure_logging()
-    processor_fns = [p for p in structlog.get_config()["processors"]]
+    processor_fns = list(structlog.get_config()["processors"])
     assert structlog.contextvars.merge_contextvars in processor_fns
 
 
