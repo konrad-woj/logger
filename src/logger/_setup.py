@@ -2,14 +2,15 @@
 
 import logging
 import os
-from typing import Any
 
 import structlog
+from structlog.stdlib import BoundLogger
 from structlog.types import Processor
 
 
 def _build_processors(is_production: bool) -> list[Processor]:
     shared: list[Processor] = [
+        structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,
         structlog.processors.TimeStamper(fmt="iso"),
@@ -44,7 +45,10 @@ def configure_logging() -> None:
     """
     is_production = os.getenv("LOG_ENV", "").lower() == "production"
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
-    level = getattr(logging, level_name, logging.INFO)
+    level = getattr(logging, level_name, None)
+    if level is None:
+        logging.warning("LOG_LEVEL=%r is not a valid level name; defaulting to INFO", level_name)
+        level = logging.INFO
 
     logging.basicConfig(
         format="%(message)s",
@@ -63,7 +67,7 @@ def configure_logging() -> None:
     )
 
 
-def get_logger(name: str) -> Any:
+def get_logger(name: str) -> BoundLogger:
     """Return a structlog BoundLogger bound to *name*.
 
     Args:
@@ -72,4 +76,4 @@ def get_logger(name: str) -> Any:
     Returns:
         A structlog ``BoundLogger`` instance.
     """
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[return-value]
