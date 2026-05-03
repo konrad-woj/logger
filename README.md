@@ -86,3 +86,24 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 ```
+
+## Per-request context in async code
+
+Use `structlog.contextvars` to attach fields (e.g. a request ID) to every log line emitted during a request, without passing them manually to each call.  The context is stored in a `contextvars.ContextVar` so concurrent async tasks are fully isolated.
+
+```python
+import structlog
+from fastapi import Request
+
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next):
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(
+        request_id=request.headers.get("X-Request-ID", "-"),
+        method=request.method,
+        path=request.url.path,
+    )
+    return await call_next(request)
+```
+
+Every `log.info(...)` call within that request will automatically include `request_id`, `method`, and `path` without any extra arguments.
