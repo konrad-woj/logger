@@ -3,20 +3,21 @@ name = "logger"
 version = "0.1.0"
 description = "Structured logging package: JSON in production, coloured console in development."
 readme = "README.md"
-requires-python = ">=3.12.0"
+requires-python = "==3.13.*"
 dependencies = [
-    "structlog>=25.0.0",
+    "structlog>=25.0.0,<26.0.0",
 ]
 
 [project.optional-dependencies]
-azure = ["azure-monitor-opentelemetry>=1.6.0"]
+azure = ["azure-monitor-opentelemetry>=1.6.0,<2.0.0"]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.5",
-    "pytest-asyncio>=0.25.0",
-    "taskipy>=1.14.0",
-    "azure-monitor-opentelemetry>=1.6.0",
+    "pytest>=8.3.5,<9.0.0",
+    "pytest-asyncio>=0.25.0,<1.0.0",
+    "taskipy>=1.14.0,<2.0.0",
+    "ruff>=0.15.0,<1.0.0",
+    "azure-monitor-opentelemetry>=1.6.0,<2.0.0",
 ]
 
 [build-system]
@@ -44,7 +45,7 @@ venvPath = "."
 venv = ".venv"
 
 [tool.taskipy.tasks]
-precommits = { cmd = "uvx ruff format . && uvx ruff check . --fix --unsafe-fixes && uvx pyright .", help = "Lint, format and typecheck Python codebase" }
+precommits = { cmd = "uv run ruff format . && uv run ruff check . --fix --unsafe-fixes && uvx pyright .", help = "Lint, format and typecheck Python codebase" }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
