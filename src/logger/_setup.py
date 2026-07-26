@@ -35,7 +35,7 @@ def _build_processors(is_production: bool, provider: LogProvider) -> list[Proces
     return shared  # type: ignore[return-value]
 
 
-def configure_logging(provider: LogProvider | None = None) -> None:
+def configure_logging(provider: LogProvider | None = None, use_azure: bool = False) -> None:
     """Configure structlog and the stdlib logging bridge.
 
     Call once at application startup — typically in ``main.py`` or the FastAPI lifespan handler — before any logger.
@@ -47,6 +47,8 @@ def configure_logging(provider: LogProvider | None = None) -> None:
 
     Args:
         provider: Target log backend, or ``None`` to read ``LOG_PROVIDER`` (default ``"generic"``).
+        use_azure: When ``True``, also calls ``logger.integrations.azure.configure_azure_monitor()``
+            after setup. Requires the ``azure`` extra.
     """
     is_production = os.getenv("LOG_ENV", "").lower() == "production"
     resolved_provider: LogProvider = (provider or os.getenv("LOG_PROVIDER", "generic")).lower()  # type: ignore[assignment]
@@ -71,6 +73,11 @@ def configure_logging(provider: LogProvider | None = None) -> None:
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
+
+    if use_azure:
+        from logger.integrations.azure import configure_azure_monitor
+
+        configure_azure_monitor()
 
 
 def get_logger(name: str) -> BoundLogger:
